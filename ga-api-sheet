@@ -1,0 +1,203 @@
+
+Loading history...
+Nicolas Sitter 7:31 PM
+Mais aussi axé dev
+Pas justeya une api phantombuster
+Je savais pas
+Nicolas Sitter 12:11 PM
+Je ne sais pas si c’est utile pour tes sales, mais depuis le 31/10 on peut planifier l’envoi des mails
+https://www.useloom.com/share/3caa3b03d96349cba9427533b165c466
+Test
+
+Stan P. 12:14 PM
+haha
+non j'avais pas vu
+à voir dans quel contexte on utilise cela
+Nicolas Sitter 12:37 PM
+Pour les mails du soir ou relance, mais bon.
+Sinon tu as vu qu’avec Mkg tu peux connecter ton FB Ads account à Hubspot ?
+Stan P. 2:09 PM
+j'avais vu effectivement !
+mais comme le FB est aussi B2C, ca fout la merde
+Nicolas Sitter 2:11 PM
+ok
+Nicolas Sitter 2:23 PM
+btw la connexion Segment semble bien marcher, on pourrait se passer de Stitch je pense.
+Stan P. 2:23 PM
+ouais..
+Nicolas Sitter 2:23 PM
+Moyennant un bon petit travail de Dashboarding
+Stan P. 2:24 PM
+haha
+je te laisse prendre le sujet :heart:
+Nicolas Sitter 2:24 PM
+:heart:
+Stan P. 2:24 PM
+ne me remercie pas
+Nicolas Sitter 2:50 PM
+Tu sais si on va lancer les agences immos en ES bientot ?
+Car on va avoir un souci avec la traduction des champs (label) des propriétés ... (ca arrive en SEO là).
+Seul moyen là : dupliquer toutes les propriétés (!)
+Stan P. 2:51 PM
+super...
+sinon fait tout en anglais ?
+Nicolas Sitter 2:51 PM
+Ouais mais bon pas idéal non plus quoi
+Le truc de Segment est pas complet, on a pas les owner pour matcher owner_id et owner_name par ex
+Stan P. 3:00 PM
+crap
+Nicolas Sitter 4:20 PM
+Hello Nicolas,
+J'espère que tu vas bien :slightly_smiling_face:
+J'aurai souhaité savoir si vous avez chez Papernest des formations en interne pour de l'upskilling ou autre. Je te demande cela car nous avons lancé au wagon une nouvelle plateforme de cours dédiée aux employés de startups, pour l'instant sur de l'UX/UI et du dev. As-tu un moment pour un call en fin de semaine à ce sujet ?
+Merci,
+A bientôt
+Tatiana
+On a la formation call center !!
+Stan P. 4:20 PM
+hahhaha
+Nicolas Sitter 5:15 PM
+Putain le tracos avec Tatiana
+Stan P. 5:32 PM
+hahahahah
+je réponds ?
+en fait vas-y
+Nicolas Sitter 6:15 PM
+non je te laisse
+C'est ton domaine l'UX/UI
+Stan P. 6:17 PM
+haha
+en vrai elle est brutale
+Nicolas Sitter 6:18 PM
+That's what we like
+Stan P. 6:18 PM
+non
+moi j'aime la douceur
+Nicolas Sitter 6:19 PM
+et les karaokés
+Nicolas Sitter 10:34 AM
+Too soon?
+e17cacd193f8b729166554e21a11b6c3.jpg 
+e17cacd193f8b729166554e21a11b6c3.jpg
+
+
+Stan P. 10:35 AM
+hahha
+ca se tente
+je l'aurais barré
+genre ie barré avec y rajouté
+Nicolas Sitter 10:36 AM
+Ouais ca va je vais pas passer ma matinée dessus haha
+Stan P. 10:36 AM
+bah si
+mec
+Nicolas Sitter 3:28 PM
+Article cool de Andrew Chen sur le NPS
+https://andrewchen.co/a-practitioners-guide-to-net-promoter-score/
+andrewchenandrewchen
+A Practitioner's Guide to Net Promoter Score
+[Dear readers, this essay is about the practical aspects of measuring Net Promoter Score, an important metric that often correlates strongly with word-of-mouth virality. Sachin Rekhi, the author, has a blog and can be found on Twitter at @sachinrekhi. He’s was most recently Director of Product at Linkedin, leading the Sales Navigator product, and previously, an Entrepreneur-in-Residence at Trinity …
+Feb 8th, 2016
+(56 kB)
+http://andrewchen.co/wp-content/uploads/2016/02/18853007256_1c7ee52ee5_z.jpg
+Nicolas Sitter 10:14 AM
+Bon je pense que j'ai le truc via API :
+1/ GET /engagements/v1/engagements/:engagementId
+2/ PATCH /engagements/v1/engagements/:engagementId
+avec body = tout le résultat de 1 mais tu remplaces recordingUrl: "http...." par recordingUrl: ""
+Dans l'UI, je ne vois plus le recording mais je garde les infos (j'ajoute une note)
+Dans l'API, j'ai la même info sauf que le recording disparait.
+Bon, ca veut pas dire que c'est delete chez Twilio par contre.
+Capture d’écran 2018-11-14 à 10.14.19.png 
+Capture d’écran 2018-11-14 à 10.14.19.png
+
+
+Donc derrière on boucle sur les engagements avec un recordingUrl et voilà.
+Stan P. 10:19 AM
+moi j'ai directement fait un delete et ca marche haha
+mais ta méthode semble la meilleure
+Nicolas Sitter 10:20 AM
+Mais tu perds le call et l'info non ? Genre les minutes etc.
+Stan P. 10:20 AM
+yes...
+mais c'est just in case
+Stan P. 10:25 AM
+mais en fait le recording est toujours stocké
+si tu remodifies en ajoutant http ca marche non ?
+Nicolas Sitter 10:50 AM
+{
+    "engagement": {
+        "id": 850547783
+    },
+    "metadata": {
+        "recordingUrl": "",
+        "body": "<p>test PATCH vide</p>"
+    }
+}
+Ca fait la même chose donc on peut économiser un call API (edited) 
+Stan P. 11:57 AM
+donc pas besoin de récupérer tout le body ?
+Nicolas Sitter 1:11 PM
+En fait je vais le faire tourner pour le SEO ca sera plus rapide !
+- J'ai exporté la donnée de Bigquery avant le 22/08 => 35k calls avec un recording URLs
+C'est chiant car la limite d'export c'est 16k lignes
+- J'ai ai que 4000 pour le Sales, faudrait peut etre check ? Ou c'est récent les recordings ?
+Ta query en-dessous
+
+SELECT DISTINCT
+  Engagement.id AS Engagement_id
+, LAST_VALUE(DATE(engagement.createdat)) OVER sorted AS Create_date_formatted
+,    LAST_VALUE(metadata.recordingUrl) OVER sorted AS recordingUrl
+
+FROM `souscritoo-1343.hubspot_sales.engagements`
+  
+WHERE engagement.type IN ("CALL") AND metadata.recordingUrl IS NOT NULL AND Date(engagement.createdat) < PARSE_DATE('%m/%d/%Y',  '8/22/2018')
+  
+WINDOW
+  sorted AS 
+  (
+    PARTITION BY Engagement.id 
+    ORDER BY engagement.lastupdated
+    RANGE BETWEEN UNBOUNDED PRECEDING 
+      AND UNBOUNDED FOLLOWING
+  )
+- J'ai lancé le script à la con
+function deleteRecordings() {
+  // Change to name of the Sheet
+  var mysheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Feuille 1'); 
+  // Change your hapikey wesh
+  var hapikey = '7f096483-9a1b-4004-bfa4-a4a73a9576eb';
+  
+  for (var i = 2; i <= mysheet.getLastRow(); i++) {
+    var engagementId = mysheet.getRange(i,1).getValue();
+    
+    var data = {
+      "metadata": {
+        "recordingUrl": ""
+      }
+    };
+    
+      var options = {
+        'method' : 'patch',
+        'contentType': 'application/json',
+        'payload' : JSON.stringify(data)
+      };
+          
+      var updateEngagement = UrlFetchApp.fetch('https://api.hubapi.com/engagements/v1/engagements/' + engagementId + '?hapikey=' + hapikey, options);
+      var updatedEngagement = JSON.parse(updateEngagement);
+      // console.log('updatedEngagement', updatedEngagement);
+      var responseCode = updateEngagement.getResponseCode();
+      // console.log ('responseCode', responseCode);
+    
+    // Logger si c'est passé
+    if (responseCode == 200) {
+      mysheet.getRange(i,4).setValue("Effacé");
+    }
+    
+    // Logger ou ca s'arrête / bug
+    else {
+      mysheet.getRange(i,4).setValue("Erreur");   
+          }
+     
+  }
+}
