@@ -1,0 +1,56 @@
+const axios = require('axios');
+var csvReader = require('csvreader');
+
+
+// const fs = require('fs')
+// const results = [];
+ 
+// fs.createReadStream('data.csv')
+//   .pipe(csv())
+//   .on('data', (data) => results.push(data))
+//   .on('end', () => {
+//     console.log(results);
+//   });
+
+
+function recordHandler(data){
+  // console.log(data[0],data[1]);
+  var engagementId = data[0];
+  	var hapikey = "c8c9920e-39b9-4cdb-8e80-08fcbd2831bd";
+	var url = 'https://api.hubapi.com/engagements/v1/engagements/' + engagementId + '?hapikey=' + hapikey;
+
+	axios.patch(url, {
+      "metadata": {"recordingUrl": "" }
+    })
+  .then(function (response) {
+    console.log("ok " + engagementId);
+  })
+  .catch(function (error) {
+    console.log("error" + engagementId);
+  });
+}
+ 
+csvReader
+  .read('./testengagement.csv', recordHandler)
+  .then(() => {
+    console.log('Done!');
+  })
+  .catch(err => {
+    console.error(err);
+  });
+
+
+// var engagementId = 1871639846;
+// var hapikey = "c8c9920e-39b9-4cdb-8e80-08fcbd2831bd";
+// var url = 'https://api.hubapi.com/engagements/v1/engagements/' + engagementId + '?hapikey=' + hapikey;
+
+// axios.patch(url, {
+//       "metadata": {"recordingUrl": "" }
+//     })
+//   .then(function (response) {
+//     console.log(response);
+//   })
+//   .catch(function (error) {
+//     console.log(error);
+//   });
+// end loop
