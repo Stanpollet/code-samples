@@ -1,0 +1,54 @@
+const fs = require('fs');
+const axios = require('axios');
+
+
+//Mettre le lien vers le csv en question
+var data = fs.readFileSync('./todeleterecordings.csv')
+    .toString() // convert Buffer to string
+    .split('\n') // split string to lines
+    .map(e => e.trim()) // remove white spaces for each line
+
+function delete_function(datagood, index) {
+//Mettre le bon hapikey que vous trouverez sur Husbpot.
+
+    var hapikey = "YOURAPIKEYHERE";
+    var url = 'https://api.hubapi.com/engagements/v1/engagements/' + datagood + '?hapikey=' + hapikey;
+    console.log("loop in" + datagood + " for id : " + index);
+    axios.patch(url, {
+        "metadata": {"recordingUrl": ""}
+    })
+        .then(function (response) {
+            console.log("ok " + datagood + " row number " + index);
+        })
+        .catch(function (error) {
+            console.log("erreur" + datagood + " row number " + index);
+        });
+}
+
+
+function wait10secondes() {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve('OK I WAITED DURING 10 SEC, NEXT BATCH');
+        }, 11000);
+    });
+}
+
+async function callRequests() {
+
+    for (var i = 0; i < data.length; i++) {
+        console.log("calling request # " + i);
+        
+        delete_function(data[i], i);
+// Comme on est limité par l'API de Husbpot à 100 requetes, on met un timer toutes les 10 secondes.
+        if (i > 0 && i % 100 === 0) {
+        	// This code is just to wait don't touch it
+            const next_batch = await wait10secondes();
+            console.log(next_batch);
+        }
+
+    }
+    console.log('END');
+}
+
+callRequests();
