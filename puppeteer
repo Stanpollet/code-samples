@@ -1,0 +1,71 @@
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const axios = require('axios');
+//var csvReader = require('csv-reader');
+//var sleep = require('sleep');
+var data = fs.readFileSync('./ahref.csv')
+    .toString() // convert Buffer to string
+    .split('\n') // split string to lines
+    .map(e => e.trim()) // remove white spaces for each line
+// .map(e => e.split(',').map(e => e.trim())); // split each line to array
+
+console.log(data);
+
+function delay(time) {
+   return new Promise(function(resolve) { 
+       setTimeout(resolve, time)
+   });
+}
+
+const screenshot = async () => {
+  const browser = await puppeteer.launch({ headless: false })
+  const page = await browser.newPage()
+  
+  const navigationPromise = page.waitForNavigation()
+  
+  await page.goto('https://ahrefs.com/user/login')
+  
+  await page.setViewport({ width: 1853, height: 900 })
+  
+  await page.waitForSelector('.container-form__password--wrapper > #formLogin #email_input')
+  await page.click('.container-form__password--wrapper > #formLogin #email_input')
+
+//changer le email par le bon  
+await page.keyboard.type('email de login')
+  
+  await page.waitForSelector('#localizejs > .container > .container-form__password--wrapper > #formLogin > .logins')
+  await page.click('#localizejs > .container > .container-form__password--wrapper > #formLogin > .logins')
+  
+//changer le mdp par le bon
+await page.keyboard.type('MDP de login')
+
+  await page.waitForSelector('#localizejs #SignInButton')
+  await page.click('#localizejs #SignInButton')
+
+  console.log("wait");
+  await delay(5000)
+  console.log("wait");
+  
+  
+   for ( var i = 0; i <data.length; i++){ 
+    console.log("gogo gadget " + i);
+    await delay(5000)
+    console.log("wait");
+
+//si vous le souhaitez, vous pouvez changer la structure d'url.
+    await page.goto("https://ahrefs.com/positions-explorer/competing-domains/v2/subdomains/fr/all/all/all/all/all/1/common_keywords_percentage_desc?target="data[i]);
+
+    await page.waitForSelector('#containerWrapped > #explorer_data #export_button')
+    await page.click('#containerWrapped > #explorer_data #export_button')
+
+    console.log("wait");
+    await delay(1000)
+    console.log("wait");
+
+    await page.waitForSelector('#CSVExportModalDialog #start_export_w_selected_charset')
+    await page.click('#CSVExportModalDialog > .modal-dialog > .modal-content > .modal-footer > .btn-primary')
+  }
+  await browser.close()
+}
+
+screenshot()
