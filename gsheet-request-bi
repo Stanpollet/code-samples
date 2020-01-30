@@ -1,0 +1,240 @@
+//-----------------------------------------------------------------------------------------------------------------------
+
+function slack_notification_check(input) {
+   var data =
+   {
+    "info": input,
+   };
+  var options = {'method' : 'post',  'contentType': 'application/json','payload' : JSON.stringify(data)};
+  var post = UrlFetchApp.fetch("https://hooks.zapier.com/hooks/catch/", options);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function create_agency(name, id_citya)
+{
+  var data = {"name": name, "lead_commission": 0.00, "client_commission": 0.00, "country": "FRA"};  
+  var options = {'method' : 'get',  'contentType': 'application/json','payload' : JSON.stringify(data)};
+  var val = UrlFetchApp.fetch('https://app.papernest.com/api/partner/legacy/agencies/', options);
+ 
+  var ret = val.getBlob().getDataAsString()
+  var regex = /(?=:).*(?=,"users")/g
+  var regex1 = /(?=_id").*(?=","name")/g
+  var ret1 = ret.match(regex)
+  var ret2 = ret1[0];
+  var id_ppn = ret2.substring(1);
+  var ret3 = ret.match(regex1);
+  var ret4 = ret3[0];
+  var obs_id = ret4.substring(6);
+  var parent = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = parent.getSheetByName("id_matching");
+  var agency = sheet.getRange("A1:A").getValues();
+  var n = agency.filter(String).length;
+  Logger.log(val);
+  Logger.log(obs_id);
+  
+  var cell_agency = sheet.getRange(n + 1,1);
+  cell_agency.setValue(name);
+  var cell_citya = sheet.getRange(n + 1,2);
+  cell_citya.setValue(id_citya);
+  var cell_ppn = sheet.getRange(n + 1, 3);
+  cell_ppn.setValue(id_ppn); 
+ 
+  return(obs_id);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function create_agent(fname, lname, mail, obs_id)
+{
+  var data =
+  {
+   "user_last_name": lname, //was first_name /modified
+   "user_first_name": fname, //was last_name /modified
+   "user_email": mail,
+   "id_agency": obs_id,
+  };
+  var options = {'method' : 'post',  'contentType': 'application/json','payload' : JSON.stringify(data)};
+  var val = UrlFetchApp.fetch('https://', options);
+  
+  Logger.log(val);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function get_uuid_agent(mail) {
+  var projectId = 'souscritoo-1343';
+  var request_id_agent = {
+        query: 'SELECT uuid, id FRemail = ' + '"' + mail +'";',
+        useLegacySql: false,
+      };
+    var queryResults0 = BigQuery.Jobs.query(request_id_agent, projectId);
+    // Get all the rows of results.
+    var rows_id = queryResults0.rows;
+    if (rows_id == null) {
+      Logger.log(mail);
+      slack_notification_check("There was an error at get_uuid_agent!")
+      return (null);
+    }
+    //Logger.log(rows_id);
+    var result0 = rows_id[0].f
+    var agent_uuid = result0[0].v
+    var agent_id = result0[1].v 
+    var data = [agent_uuid, agent_id];
+    
+    return (data);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function get_id_agency(agent_id) 
+{
+    var projectId = 'souscritoo-1343';
+  
+    var request_id_agency = {
+        query: 'SELECT realestateag gent_id,
+        useLegacySql: false,
+      };
+    var queryResults1 = BigQuery.Jobs.query(request_id_agency, projectId);
+    // Get all the rows of results.
+    var rows_aid = queryResults1.rows;
+    if (rows_aid == null) {
+      slack_notification_check("There was an error at get_id_agency!")
+      return ;
+    }
+    //Logger.log(rows_aid);
+    var result1 = rows_aid[0].f
+    var id_agency = result1[0].v
+    
+    return (id_agency);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function get_uuid_agency(agency_id) 
+{
+    var projectId = 'souscritoo';
+  
+    var request_name_agency = {
+        query: 'SELECT uuid, obfuscated_id FROM `souscritoo-1343.raw_airflow_tables.api_realest` where id = ' + agency_id,
+        useLegacySql: false,
+      };
+    var queryResults2 = BigQuery.Jobs.query(request_name_agency, projectId);
+    // Get all the rows of results.
+    var rows_name = queryResults2.rows; 
+    if (rows_name == null) {
+      slack_notification_check("There was an error at get_uuid_agency!")
+      return ;
+    }
+    var result = rows_name[0].f
+    var agency_uuid = result[0].v
+    var obs_id = result[1].v
+    
+    var data = [agency_uuid, obs_id]
+    
+    return (data);
+}
+
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function check_agent(fname, lname, mail, id_ppn) 
+{
+  var b = 0;
+  var agent_uuid;
+  var agent_id;
+  var info_agency;
+  var agency_uuid;
+  var obs_id;
+  
+  var info_agent = get_uuid_agent(mail)
+  
+  if (info_agent != null)
+  {
+    agent_uuid = info_agent[0];
+    agent_id = info_agent[1];
+    var old_agency_id = get_id_agency(agent_id);
+    if (id_ppn == old_agency_id)
+    {
+      info_agency = get_uuid_agency(id_ppn)
+      agency_uuid = info_agency[0];
+      return (agent_uuid, agency_uuid);
+    }
+    else
+    {
+      b = 1;
+    }  
+  }
+  
+  if (info_agent == null || b == 1)
+  { 
+    info_agency = get_uuid_agency(id_ppn);
+    agency_uuid = info_agency[0];
+    obs_id = info_agency[1]
+    agent_uuid = create_agent(fname, lname, mail, obs_id);
+  }
+  
+  return (agent_uuid, agency_uuid);
+}
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+function run_update() {
+  var parent = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = parent.getSheetByName("weekly");
+  
+  var lname = sheet.getRange("A1:A").getValues();
+  var fname = sheet.getRange("B1:B").getValues();
+  var mail = sheet.getRange("C1:C").getValues();
+  var agency = sheet.getRange("F1:F").getValues();
+  var id_citya = sheet.getRange("I1:I").getValues();
+  var id_ppn = sheet.getRange("J1:J").getValues();
+  
+  //var n = lname.filter(String).length;
+  var n = 14;
+  
+  var i = 12;
+  while (i < n)
+  {  
+    var a_fname = fname[i][0];
+    var a_lname = lname[i][0];
+    var a_mail = mail[i][0];
+    var a_agency = agency[i][0];
+    var a_id_citya = id_citya[i][0];
+    var a_id_ppn = id_ppn[i][0];
+    var agent_uuid;
+    var agency_uuid;
+    
+    Logger.log(a_mail);
+    Logger.log(a_id_ppn);
+    
+    if (a_id_ppn == "#N/A")
+    {
+      Logger.log("need to create agency");
+      var obs_id = create_agency(a_agency, a_id_citya);
+      create_agent(a_fname, a_lname, a_mail, obs_id);
+      var info_agent = get_uuid_agent(a_mail);
+      agent_uuid = info_agent[0];
+      var agent_id = info_agent[1];
+      var agency_id = get_id_agency(agent_id);
+      var info_agency = get_uuid_agency(agency_id);
+      agency_uuid = info_agency[0];
+    }
+    else
+    {
+      var info = check_agent(a_fname, a_lname, a_mail, a_id_ppn);
+      agent_uuid = info[0];
+      agency_uuid = info[1];
+    }
+    
+    var cell_exist = sheet.getRange(i + 1, 11)
+    cell_exist.setValue("TRUE");
+    var cell_agent_uuid = sheet.getRange(i + 1, 12);
+    cell_agent_uuid.setValue(agent_uuid);
+    var cell_agency_uuid = sheet.getRange(i + 1, 13);
+    cell_agency_uuid.setValue(agency_uuid);
+   
+    i++;
+  }
+  slack_notification_check("End of the function, we go through all the agents!");
+}
