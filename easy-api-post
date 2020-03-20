@@ -1,0 +1,36 @@
+const axios = require('axios');
+​
+var token = "xxx";
+​
+axios.defaults.headers.common['Authorization'] = token;
+​
+var config = {
+headers: {'Authorization': "Token " + token}
+};
+​
+var bodyParameters = {
+        "agent": "xxx",
+        "country": "FRA",
+        "client": {
+                "phone_number": "0668278046",
+                "has_called_opt_in": false,
+                "email": "test.withoutbjnginibinbionbgiadd83871234@yopmail.com",
+                "last_name": "from Papernest",
+                "first_name": "This is",
+        },
+        "housing": {
+                "address": {
+                        "street_number": "42",
+                        "street": "Rue de la Paix",
+                        "zip_code": "75002",
+                        "city": "Paris"
+                }
+        }
+}
+​
+axios.post(URL, bodyParameters, config)
+.then(function(response) {
+                console.log(response.data);
+                console.log("This is a clear success!");
+                }).catch(function(error) {
+                        console.log(error.response);
