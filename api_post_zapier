@@ -1,5 +1,5 @@
 var number = input.xx;
-var sctUrl = 'https://';
+var url = 'https://';
 
   var params = {
     "site": "unbounce",
